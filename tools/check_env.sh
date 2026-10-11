@@ -7,7 +7,14 @@ python3 -c "import numpy, PIL, scipy" 2>/dev/null && ok "numpy / pillow / scipy"
 echo "== ffmpeg"
 command -v ffmpeg >/dev/null && ok "$(ffmpeg -version | head -1)" || ng "ffmpeg がない (apt-get install -y ffmpeg)"
 echo "== フォント (Noto Serif CJK JP)"
-python3 -c "import sys; sys.path.insert(0,'render'); from paths import find_font; print('  [OK]', find_font('Bold'))" 2>/dev/null || ng "フォントがない (render/paths.py のエラー文を参照)"
+for w in Bold Medium Regular; do
+  f=$(python3 -c "import sys; sys.path.insert(0,'render'); from paths import find_font; print(find_font('$w'))" 2>/dev/null)
+  case "$f" in
+    *Serif*$w*) ok "$w: $f" ;;
+    "") ng "$w がない (apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra)" ;;
+    *) ng "$w がなく $f で代用される。見本と字形がずれる (apt-get install -y fonts-noto-cjk-extra)" ;;
+  esac
+done
 echo "== VOICEVOX エンジン (http://127.0.0.1:50021)"
 curl -s -m 3 http://127.0.0.1:50021/version >/dev/null && ok "起動中: $(curl -s http://127.0.0.1:50021/version)" || echo "  [--] 未起動。docs/voicevox.md を参照"
 echo "== 外部への接続 (素材取得に使えるか)"

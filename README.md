@@ -33,7 +33,7 @@ out/                      書き出し先（git 管理外）
 
 ```bash
 pip install -r requirements.txt          # numpy, pillow, scipy
-sudo apt-get install -y ffmpeg fonts-noto-cjk   # 入っていなければ
+sudo apt-get install -y ffmpeg fonts-noto-cjk fonts-noto-cjk-extra   # 入っていなければ（extra は Medium の太さ用）
 bash tools/check_env.sh
 
 python3 render/frames.py                       # 酒蔵・科学図解など → out/

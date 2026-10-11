@@ -9,6 +9,19 @@ from frames import (W, H, INK, SHU, AI, OCHRE, SERIF_B, SERIF_M, SERIF_R, font, 
 
 rng = np.random.default_rng(11)
 
+# 場面ごとの乱数の開始位置。和紙・落款のかすれ (frames.rng) と猪口・ミクロ (rng) は
+# 共有の乱数なので、前に描いた場面で結果が変わってしまう。合格見本 (docs/approved_look/) を
+# 「q → map → micro」の順で書き出したときの位置に合わせ、単独で書き出しても見本と同じ画にする。
+#   場面: (frames.rng(7) を進める数, rng(11) を進める数)
+SCENE_RNG = {'q': (0, 0), 'map': (6372942, 2119048), 'micro': (21132059, 2119048)}
+
+
+def reset_rng(scene):
+    import frames
+    a, b = SCENE_RNG[scene]
+    frames.rng.bit_generator.state = np.random.PCG64(7).advance(a).state
+    rng.bit_generator.state = np.random.PCG64(11).advance(b).state
+
 
 def L():
     return Image.new('L', (W, H), 0)
@@ -405,14 +418,17 @@ if __name__ == '__main__':
     import sys
     which = sys.argv[1:] or ['q', 'map', 'micro', 'video']
     if 'q' in which:
+        reset_rng('q')
         scene_question2().save(str(OUT / '01_question_v2.png'))
     if 'map' in which:
+        reset_rng('map')
         for name, t, pa, la in [('04a_map_japan', 0, 0, 0), ('04b_map_kyushu', .55, 0, 0), ('04c_map_kumamoto', 1, 1, 1)]:
             c, s = map_state(t)
             im = render_map(c, s, pa, la)
             im = subtitle(im, ['日本酒の「華やかな香り」を全国に広めた酵母。', 'そのふるさとは、熊本。'])
             im.save(str(OUT / f'{name}.png'))
     if 'micro' in which:
+        reset_rng('micro')
         im, box = scene_micro()
         im.save(str(OUT / '05_micro.png'))
         print('micro host', box)
