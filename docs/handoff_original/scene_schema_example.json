@@ -1,0 +1,15 @@
+{
+  "note": "構造例であり、正確な時間・映像・音声は本制作で決める。外部API料金が発生する前提を含まない。",
+  "episode_id": "SAKE_PILOT_001",
+  "title": "日本酒からリンゴの香りがするのはなぜ？",
+  "format": {"width": 1920, "height": 1080, "fps": 30, "duration_target_seconds": "40-60"},
+  "character": {"id":"sake_host", "master":"assets/sake_host_master.png", "voicevox_speaker":"choose_and_verify", "voicevox_credit":"check_license"},
+  "scenes": [
+    {"id":"S01","purpose":"question","narration":"日本酒から、リンゴのような香りがすることがあります。","pause_after_seconds":0.7,"visual":"full_frame_sake_glass","character_pose":null,"subtitle":"日本酒から、リンゴのような香りがすることがあります。","asset_id":"sake_glass_01"},
+    {"id":"S02","purpose":"surprise","narration":"でも、日本酒の原料にリンゴは使われていません。","pause_after_seconds":0.8,"visual":"rice_koji_and_sake_host","character_pose":"surprised","subtitle":"でも、原料にリンゴは使われていません。","asset_id":"sake_ingredients_01"},
+    {"id":"S03","purpose":"investigation","narration":"答えは、発酵を担う酵母の働きにあります。","pause_after_seconds":0.4,"visual":"brewery_then_micro_world","character_pose":"pointing","subtitle":"答えは、酵母の働きにあります。","asset_id":"micro_yeast_01"},
+    {"id":"S04","purpose":"answer","narration":"酵母がつくる香り成分には、果物に似た香りを持つものがあるのです。","pause_after_seconds":0.7,"visual":"scientific_diagram","character_pose":null,"subtitle":"酵母がつくる香り成分が、果実のように香る。","asset_id":"coded_aroma_diagram_01"}
+  ],
+  "asset_manifest_fields": ["asset_id","description","scene_ids","source_type","source_path","license_or_generation_note","width","height","status"],
+  "qa_status": "NOT_STARTED"
+}
