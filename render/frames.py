@@ -86,8 +86,19 @@ def host(pose, height):
     return rgb
 
 
+MARGIN = 0.06   # キャラは画面端から6%以上離す (CLAUDE.md)
+
+
 def place_host(img, pose, height, cx, foot_y, shadow=True):
     h = host(pose, height)
+    # ポーズによって腕の広がりが違うので、絵の実際の範囲で左右の余白を守る
+    bx0, _, bx1, _ = h.getchannel('A').getbbox()
+    lo, hi = W * MARGIN, W * (1 - MARGIN)
+    left, right = cx - h.width / 2 + bx0, cx - h.width / 2 + bx1
+    if right > hi:
+        cx -= right - hi
+    elif left < lo:
+        cx += lo - left
     x, y = int(cx - h.width / 2), int(foot_y - h.height)
     if shadow:
         sh = Image.new('L', img.size, 0)
@@ -400,7 +411,26 @@ def scene_kura():
 
 
 # ================= 場面3: 科学図解 =================
-def scene_science():
+SCIENCE_SUB = ['発酵の途中で、酵母が香りの成分をつくる。', 'それが「果物の香り」の正体。']
+# 図解の札と矢印の範囲 (強調しないほうを薄くするとき用)
+SCIENCE_ITEMS = {'cap': {'card': 360, 'arrow': (520, 360, 716, 548)},
+                 'iso': {'card': 760, 'arrow': (520, 606, 716, 762)}}
+
+
+def _fade_item(img, plain, item, amount=.62):
+    """札と矢印を、描く前の紙 (plain) に寄せて薄くする"""
+    m = Image.new('L', (W, H), 0)
+    d = ImageDraw.Draw(m)
+    y = SCIENCE_ITEMS[item]['card']
+    d.rounded_rectangle([720, y - 100, 1380, y + 100], radius=16, fill=255)
+    d.rectangle(SCIENCE_ITEMS[item]['arrow'], fill=255)
+    m = m.filter(ImageFilter.GaussianBlur(6)).point(lambda v: int(v * amount))
+    return Image.composite(plain, img, m)
+
+
+def scene_science(pose='book', highlight=None, sub=SCIENCE_SUB):
+    """pose=None でキャラなし、sub=None で字幕なし。
+    highlight='cap' / 'iso' で、その札に朱の帯を付け、もう一方の札と矢印を薄くする"""
     img = washi()
     d = ImageDraw.Draw(img)
     # 見出し
@@ -423,6 +453,7 @@ def scene_science():
         o = o.rotate(ang, center=(cx, cy))
         return ink_layer(img, o.filter(ImageFilter.GaussianBlur(0.9)), INK, 0.85)
 
+    plain = img.copy()
     ycx, ycy = 330, 560
     img = cell(img, ycx, ycy, 150, 125, 10)
     img = cell(img, ycx + 150, ycy - 104, 62, 52, 30)       # 芽
@@ -487,10 +518,18 @@ def scene_science():
 
     img = card(img, 360, 'カプロン酸エチル', 'リンゴのような香り', 'apple')
     img = card(img, 760, '酢酸イソアミル', 'バナナのような香り', 'banana')
+    if highlight:
+        other = 'iso' if highlight == 'cap' else 'cap'
+        img = _fade_item(img, plain, other)
+        y = SCIENCE_ITEMS[highlight]['card']
+        ImageDraw.Draw(img).rectangle([730, y - 89, 741, y + 89], fill=SHU)
 
     img = seal(img, 56, 56, '酒の博物誌', 52)
-    img, box = place_host(img, 'book', 700, 1610, 900)
-    img = subtitle(img, ['発酵の途中で、酵母が香りの成分をつくる。', 'それが「果物の香り」の正体。'])
+    box = None
+    if pose:
+        img, box = place_host(img, pose, 700, 1610, 900)
+    if sub:
+        img = subtitle(img, sub)
     return img, box
 
 

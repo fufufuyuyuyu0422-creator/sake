@@ -13,7 +13,9 @@ rng = np.random.default_rng(11)
 # 共有の乱数なので、前に描いた場面で結果が変わってしまう。合格見本 (docs/approved_look/) を
 # 「q → map → micro」の順で書き出したときの位置に合わせ、単独で書き出しても見本と同じ画にする。
 #   場面: (frames.rng(7) を進める数, rng(11) を進める数)
-SCENE_RNG = {'q': (0, 0), 'map': (6372942, 2119048), 'micro': (21132059, 2119048)}
+#   science は frames.py の「問い(旧) → 酒蔵 → 図解」の順で書き出した見本 (03_science.png) に合わせた位置。
+SCENE_RNG = {'q': (0, 0), 'map': (6372942, 2119048), 'micro': (21132059, 2119048),
+             'science': (12751515, 0)}
 
 
 def reset_rng(scene):
@@ -135,9 +137,14 @@ def _ellmask(cx, cy, rx, ry, blur=0):
     return m.filter(ImageFilter.GaussianBlur(blur)) if blur else m
 
 
-def scene_question2():
+Q_HEADING = ('果物ゼロの酒に、', 'リンゴの香り？')
+Q_SUB = ['原料は、米と米麹と水。', 'なのに、果物みたいな香りがすることがある。']
+
+
+def scene_question2(heading=Q_HEADING, sub=Q_SUB, cx=1080):
+    """heading=None で縦書き見出しなし、sub=None で字幕なし。cx で猪口(とリンゴ)の横位置"""
     img = washi()
-    cx, cy, R = 1080, 470, 270
+    cy, R = 470, 270
     # 立ちのぼる香り
     sm = L()
     ds = ImageDraw.Draw(sm)
@@ -146,7 +153,7 @@ def scene_question2():
         brush_line(ds, pts, 8, 1)
     img = ink_layer(img, sm.filter(ImageFilter.GaussianBlur(2.5)), (130, 112, 88), .45)
     # 香りの先に、にじんだリンゴ
-    ax, ay = 1330, 150
+    ax, ay = cx + 250, 150
     ap = L()
     ImageDraw.Draw(ap).ellipse(ell(ax, ay + 8, 78, 72), fill=255)
     img = ink_layer(img, ap.filter(ImageFilter.GaussianBlur(12)), SHU, .30)
@@ -160,12 +167,14 @@ def scene_question2():
 
     img = kikichoko(img, cx, cy, R)
 
-    d = ImageDraw.Draw(img)
-    f = font(SERIF_B, 84)
-    vertical_text(d, 420, 130, '果物ゼロの酒に、', f, INK)
-    vertical_text(d, 300, 130, 'リンゴの香り？', f, SHU)
+    if heading:
+        d = ImageDraw.Draw(img)
+        f = font(SERIF_B, 84)
+        vertical_text(d, 420, 130, heading[0], f, INK)
+        vertical_text(d, 300, 130, heading[1], f, SHU)
     img = seal(img, 56, 56, '酒の博物誌', 52)
-    img = subtitle(img, ['原料は、米と米麹と水。', 'なのに、果物みたいな香りがすることがある。'])
+    if sub:
+        img = subtitle(img, sub)
     return img
 
 
@@ -306,7 +315,11 @@ def map_video(path, fps=30):
 
 
 # ================= 場面5: ミクロ世界 (醪の中) =================
-def scene_micro():
+MICRO_SUB = ['醪（もろみ）の中では、酵母が糖をアルコールに変えながら、', '香りの成分もつくっている。']
+
+
+def scene_micro(pose='surprise', sub=MICRO_SUB):
+    """pose=None でキャラなし、sub=None で字幕なし"""
     # 醪の中: 温かい乳白〜琥珀のにじみ
     base = np.ones((H, W, 3)) * np.array([226, 210, 168], float)
     yy, xx = np.mgrid[0:H, 0:W]
@@ -408,9 +421,12 @@ def scene_micro():
     d.text((1650, 860), '再現イメージ', font=font(SERIF_R, 28), fill=(110, 96, 74))
 
     # 縮んだ案内人
-    img, box = place_host(img, 'surprise', 300, 330, 790, shadow=True)
+    box = None
+    if pose:
+        img, box = place_host(img, pose, 300, 330, 790, shadow=True)
     img = seal(img, 56, 56, '酒の博物誌', 52)
-    img = subtitle(img, ['醪（もろみ）の中では、酵母が糖をアルコールに変えながら、', '香りの成分もつくっている。'])
+    if sub:
+        img = subtitle(img, sub)
     return img, box
 
 

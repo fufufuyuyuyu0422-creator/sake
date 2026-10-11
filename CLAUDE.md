@@ -98,6 +98,8 @@ YouTube の新企画「酒の歴史・文化・科学を旅する教養チャン
 
 ## 作業の進め方（次にやること）
 
+**2026-10-11: 1〜8 まで済み。** 試作は `deliverables/pilot/`。作り直すときは `python3 tools/synth_voice.py`（エンジン起動中）→ `python3 render/pilot.py video`。
+
 1. `bash tools/check_env.sh` で環境を確認
 2. `python3 render/frames2.py q map micro` で見本が再現できるか確認（`out/` に出る）
 3. VOICEVOX が動くか確認（`docs/voicevox.md`）
