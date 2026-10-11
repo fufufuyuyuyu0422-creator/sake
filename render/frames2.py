@@ -141,7 +141,7 @@ Q_HEADING = ('果物ゼロの酒に、', 'リンゴの香り？')
 Q_SUB = ['原料は、米と米麹と水。', 'なのに、果物みたいな香りがすることがある。']
 
 
-def scene_question2(heading=Q_HEADING, sub=Q_SUB, cx=1080):
+def scene_question2(heading=Q_HEADING, sub=Q_SUB, cx=1080, seal_on=True):
     """heading=None で縦書き見出しなし、sub=None で字幕なし。cx で猪口(とリンゴ)の横位置"""
     img = washi()
     cy, R = 470, 270
@@ -172,7 +172,8 @@ def scene_question2(heading=Q_HEADING, sub=Q_SUB, cx=1080):
         f = font(SERIF_B, 84)
         vertical_text(d, 420, 130, heading[0], f, INK)
         vertical_text(d, 300, 130, heading[1], f, SHU)
-    img = seal(img, 56, 56, '酒の博物誌', 52)
+    if seal_on:
+        img = seal(img, 56, 56, '酒の博物誌', 52)
     if sub:
         img = subtitle(img, sub)
     return img
@@ -211,7 +212,7 @@ def map_paper():
 _LAND_STAIN = None
 
 
-def render_map(c, s, pin_alpha=0.0, label_alpha=0.0):
+def render_map(c, s, pin_alpha=0.0, label_alpha=0.0, seal_on=True):
     global _LAND_STAIN
     img = map_paper()
     land = L()
@@ -271,7 +272,8 @@ def render_map(c, s, pin_alpha=0.0, label_alpha=0.0):
         do.text((bx + 36, by + 18), '熊本県酒造研究所', font=font(SERIF_B, 50), fill=INK + (a,))
         do.text((bx + 38, by + 86), '吟醸用「熊本酵母」が生まれた場所', font=font(SERIF_M, 32), fill=(96, 84, 70, a))
         img = Image.alpha_composite(img.convert('RGBA'), ov).convert('RGB')
-    img = seal(img, 56, 56, '酒の博物誌', 52)
+    if seal_on:
+        img = seal(img, 56, 56, '酒の博物誌', 52)
     return img
 
 
@@ -318,7 +320,7 @@ def map_video(path, fps=30):
 MICRO_SUB = ['醪（もろみ）の中では、酵母が糖をアルコールに変えながら、', '香りの成分もつくっている。']
 
 
-def scene_micro(pose='surprise', sub=MICRO_SUB):
+def scene_micro(pose='surprise', sub=MICRO_SUB, seal_on=True, note_on=True):
     """pose=None でキャラなし、sub=None で字幕なし"""
     # 醪の中: 温かい乳白〜琥珀のにじみ
     base = np.ones((H, W, 3)) * np.array([226, 210, 168], float)
@@ -418,13 +420,15 @@ def scene_micro(pose='surprise', sub=MICRO_SUB):
     tag(1300, 140, 'カプロン酸エチル', SHU)
     tag(470, 120, '酢酸イソアミル', (196, 140, 30))
     # 注記
-    d.text((1650, 860), '再現イメージ', font=font(SERIF_R, 28), fill=(110, 96, 74))
+    if note_on:
+        d.text((1650, 860), '再現イメージ', font=font(SERIF_R, 28), fill=(110, 96, 74))
 
     # 縮んだ案内人
     box = None
     if pose:
         img, box = place_host(img, pose, 300, 330, 790, shadow=True)
-    img = seal(img, 56, 56, '酒の博物誌', 52)
+    if seal_on:
+        img = seal(img, 56, 56, '酒の博物誌', 52)
     if sub:
         img = subtitle(img, sub)
     return img, box

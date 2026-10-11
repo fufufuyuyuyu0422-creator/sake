@@ -49,8 +49,9 @@
 - **飲酒をすすめない**: 「かぐ」話にとどめた。「飲め」「次の一杯を」は言わない
 - 前の版にあった「どちらも吟醸香の代表」は、尺の都合で削った（出典の範囲の話なので、戻してもよい）
 
-## 前の版（玄野武宏・です・ます調）の制作
+## 制作（2026-10-11 済み）
 
-- 完成品: `deliverables/pilot/pilot_final.mp4`（58.4秒）、検品は同じフォルダの `qa_report.md`。**これは前の版の台本で作ったもの**
-- 場面構成: `docs/pilot_scenes.json`（まだ前の版の文言）。音声: `python3 tools/synth_voice.py` → `assets/voice/pilot/`。動画: `python3 render/pilot.py video`
-- この版で作り直すときは、声を決めてから `docs/pilot_scenes.json` の字幕・読み・話者・10行目のポーズ（normal）を書き換え、音声と動画を作り直す
+- 声は **青山龍星に決定**。完成品は `deliverables/pilot/pilot_final.mp4`（58.35秒）、検品は同じフォルダの `qa_report.md`
+- 10行目のポーズは normal（上の表のとおり）
+- 画面の切り替えと、液面に寄ってミクロ世界へ入るつなぎ（04行目）の作り方は `docs/pilot_scenes.json` の `cam` / `dive` / `overlay`。書き方は `render/pilot.py` の先頭
+- 作り直すとき: エンジンを起動して `python3 tools/synth_voice.py` → `python3 render/pilot.py video`（約7分）

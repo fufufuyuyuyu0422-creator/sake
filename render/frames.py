@@ -124,7 +124,12 @@ def paper_unify(img):
 
 def subtitle(img, lines):
     img = paper_unify(img)
-    over = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    return Image.alpha_composite(img.convert('RGBA'), subtitle_layer(lines)).convert('RGB')
+
+
+def subtitle_layer(lines):
+    """字幕の帯と文字だけの透明レイヤー (カメラを動かしても字幕は動かさないとき用)"""
+    over = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(over)
     # 下部帯: 墨色の半透明 + 上端だけ細い朱線
     d.rectangle([0, BAND_TOP, W, H], fill=(28, 24, 20, 205))
@@ -135,7 +140,7 @@ def subtitle(img, lines):
     for i, t in enumerate(lines):
         tw = d.textlength(t, font=SUB_FONT)
         d.text(((W - tw) / 2, y0 + i * lh), t, font=SUB_FONT, fill=(246, 238, 220, 255))
-    return Image.alpha_composite(img.convert('RGBA'), over).convert('RGB')
+    return over
 
 
 def vertical_text(d, x, y, text, f, fill, spacing=1.08):
@@ -153,7 +158,12 @@ def vertical_text(d, x, y, text, f, fill, spacing=1.08):
 
 def seal(img, x, y, text, size=64):
     """朱の落款風ラベル"""
-    over = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    return Image.alpha_composite(img.convert('RGBA'), seal_layer(x, y, text, size)).convert('RGB')
+
+
+def seal_layer(x, y, text, size=64):
+    """落款だけの透明レイヤー"""
+    over = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(over)
     d.rounded_rectangle([x, y, x + size, y + size * len(text) * 0.92 + 18], radius=6, fill=SHU + (225,))
     f = font(SERIF_B, int(size * 0.62))
@@ -164,7 +174,7 @@ def seal(img, x, y, text, size=64):
     m = Image.fromarray((rng.random((H, W)) > 0.93).astype(np.uint8) * 255).filter(ImageFilter.GaussianBlur(0.7))
     a = ImageChops.subtract(over.getchannel('A'), m.point(lambda v: v // 2))
     over.putalpha(a)
-    return Image.alpha_composite(img.convert('RGBA'), over).convert('RGB')
+    return over
 
 
 # ================= 場面1: 問い =================
@@ -411,6 +421,12 @@ def scene_kura():
 
 
 # ================= 場面3: 科学図解 =================
+def science_heading(d):
+    """図解の見出し (横書き＋朱の下線)"""
+    d.text((140, 92), '香りをつくるのは「酵母」', font=font(SERIF_B, 60), fill=INK)
+    d.line([(140, 180), (820, 180)], fill=SHU, width=4)
+
+
 SCIENCE_SUB = ['発酵の途中で、酵母が香りの成分をつくる。', 'それが「果物の香り」の正体。']
 # 図解の札と矢印の範囲 (強調しないほうを薄くするとき用)
 SCIENCE_ITEMS = {'cap': {'card': 360, 'arrow': (520, 360, 716, 548)},
@@ -428,15 +444,14 @@ def _fade_item(img, plain, item, amount=.62):
     return Image.composite(plain, img, m)
 
 
-def scene_science(pose='book', highlight=None, sub=SCIENCE_SUB):
+def scene_science(pose='book', highlight=None, sub=SCIENCE_SUB, seal_on=True, heading_on=True):
     """pose=None でキャラなし、sub=None で字幕なし。
     highlight='cap' / 'iso' で、その札に朱の帯を付け、もう一方の札と矢印を薄くする"""
     img = washi()
     d = ImageDraw.Draw(img)
     # 見出し
-    hf = font(SERIF_B, 60)
-    d.text((140, 92), '香りをつくるのは「酵母」', font=hf, fill=INK)
-    d.line([(140, 180), (820, 180)], fill=SHU, width=4)
+    if heading_on:
+        science_heading(d)
 
     # 酵母 (出芽している楕円細胞, 薄墨の淡彩)
     def cell(img, cx, cy, rx, ry, ang=0):
@@ -524,7 +539,8 @@ def scene_science(pose='book', highlight=None, sub=SCIENCE_SUB):
         y = SCIENCE_ITEMS[highlight]['card']
         ImageDraw.Draw(img).rectangle([730, y - 89, 741, y + 89], fill=SHU)
 
-    img = seal(img, 56, 56, '酒の博物誌', 52)
+    if seal_on:
+        img = seal(img, 56, 56, '酒の博物誌', 52)
     box = None
     if pose:
         img, box = place_host(img, pose, 700, 1610, 900)
